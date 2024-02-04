@@ -73,7 +73,7 @@
 # echo "Attached policy. And KSA annotation has been completed in EKS provision stage (IRSA_Stack)."
 export CLUSTER_NAME=$(cat cdk.json | grep "eks_cluster_name" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
 export CLUSTER_REGION=$(cat cdk.json | grep "REGION" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
-export ROLE_ARN="arn:aws:iam::536704830979:role/EKS-Enclaves-ClusterAdminRole047D4FCA-Vdnhzp4kE2HY"
+export ROLE_ARN="arn:aws:iam::<acccount_id>:role/<role_id>"
 
 cd ./stacks/kubeflow-manifests/
 # pip install -r tests/e2e/requirements.txt
