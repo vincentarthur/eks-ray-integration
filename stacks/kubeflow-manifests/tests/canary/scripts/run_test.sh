@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# All the inputs to this script as environment variables 
+# REPO_PATH : Local root path of the kubeflow-manifest github repo 
+# CLUSTER_NAME : Name of the EKS cluster
+# CLUSTER_REGION : Region of the EKS cluster
+
+
+# Script configuration
+set -euo pipefail
+
+function push_to_cloudwatch {
+  echo "Pushing Codebuild stats to Cloudwatch."
+  python ../canary/scripts/push_stats_to_cloudwatch.py
+}
+trap push_to_cloudwatch EXIT
+
+export CANARY_TEST_DIR=${REPO_PATH}/tests/canary
+export E2E_TEST_DIR=${REPO_PATH}/tests/e2e
+
+# Connect to eks cluster 
+aws eks update-kubeconfig --name $CLUSTER_NAME --region $CLUSTER_REGION
+cd ${REPO_PATH}
+make cleanup-ack-req 1>/dev/null 2>&1 || true 
+
+# Modify metadeta file
+cd $CANARY_TEST_DIR
+sed -i 's/$CLUSTER_NAME/'"$CLUSTER_NAME"'/g' metadata-canary
+sed -i 's/$CLUSTER_REGION/'"$CLUSTER_REGION"'/g' metadata-canary
+
+mkdir -p $E2E_TEST_DIR/.metadata/
+cp metadata-canary $E2E_TEST_DIR/.metadata/
+
+cd $E2E_TEST_DIR
+pytest tests/test_sanity_portforward.py -s -q --metadata .metadata/metadata-canary --region $CLUSTER_REGION --installation_option $INSTALLATION_OPTION --junitxml ../canary/integration_tests.xml
+

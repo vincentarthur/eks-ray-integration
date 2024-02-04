@@ -1,0 +1,13 @@
+RDS:
+  instanceName: 
+  secretName:
+  subnetGroupName:
+S3:
+  bucket: 
+  backEndRoleArn: 
+  profileRoleArn:
+  policyArn:
+  secretName: 
+CLUSTER:
+  name: 
+  region: 

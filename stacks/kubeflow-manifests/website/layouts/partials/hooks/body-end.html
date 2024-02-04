@@ -1,0 +1,27 @@
+{{ if (findRE "<pre" .Content 1) }}
+{{ $jsCopy := resources.Get "js/copy-code-button.js" | minify }}
+<script src="{{ $jsCopy.RelPermalink }}"></script>
+{{ end }}
+
+<script src="https://cdn.jsdelivr.net/npm/@docsearch/js@3"></script>
+
+<script type="text/javascript">
+
+docsearch({
+
+appId: 'A1FXAERJE4',
+
+apiKey: '88f3a753878f24ffdcd3d786be775545',
+
+indexName: 'kubeflow-manifests',
+
+container: '#docsearch',
+
+searchParameters: {
+    facetFilters: ["version: {{ .Site.Params.version }} "],
+  },
+debug: true // Set debug to true if you want to inspect the modal
+
+});
+</script>
+
