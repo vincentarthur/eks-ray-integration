@@ -16,10 +16,11 @@ from cdk_nag import AwsSolutionsChecks, NagSuppressions
 # with examples from the CDK Developer's Guide, which are in the process of
 # being updated to use `cdk`.  You may delete this import if you don't need it.
 from stacks.eks_stack import EKSClusterStack
-from stacks.enclaves_launch_template_stack import EnclavesNodeLaunchStack
-from stacks.nitro_enclaves_plugin_stack import DevicePluginInstallationStack
-from stacks.arbiter_server_stack import FlArbiterServerStack
-from stacks.irsa_stack import IRSAStack
+from stacks.ray_launch_template_stack import RayNodeLaunchStack
+# from stacks.enclaves_launch_template_stack import EnclavesNodeLaunchStack
+# from stacks.nitro_enclaves_plugin_stack import DevicePluginInstallationStack
+# from stacks.arbiter_server_stack import FlArbiterServerStack
+# from stacks.irsa_stack import IRSAStack
 
 
 def _k8s_manifest_yaml_to_json(file_path):
@@ -50,12 +51,12 @@ resource_prefix = app.node.try_get_context("eks_cluster_name")
 ############################################################
 ## Step 1 - Create Launch Template for Enclave Template
 ############################################################
-enclages_node_launch_stack = EnclavesNodeLaunchStack(
+ray_node_launch_stack = RayNodeLaunchStack(
     app,
-    f'EnclavesNodeLaunchTemplate',
+    f'RayNodeLaunchTemplate',
     env=cdk_environment,
-    disk_size=app.node.try_get_context("enclaves_node_disk_size"),
-    ebs_iops=app.node.try_get_context("enclaves_node_ebs_iops")
+    disk_size=app.node.try_get_context("ray_node_disk_size"),
+    ebs_iops=app.node.try_get_context("ray_node_ebs_iops")
 )
 
 ############################################################
@@ -66,7 +67,7 @@ eks_stack = EKSClusterStack(
     f'EKS-Enclaves',
     env=cdk_environment,
     resource_prefix=resource_prefix,
-    enclaves_node_group_launch_template=enclages_node_launch_stack.lt
+    ray_node_group_launch_template=ray_node_launch_stack.lt
 )
 
 # ############################################################

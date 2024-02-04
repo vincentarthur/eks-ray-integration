@@ -16,13 +16,13 @@ class EKSClusterStack(Stack):
                  scope: Construct,
                  id: str,
                  resource_prefix: str,
-                 enclaves_node_group_launch_template: Construct,
+                 ray_node_group_launch_template: Construct,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         self.cluster_name = f"cluster-{resource_prefix}"
         self._create_iam_role()
         self._create_vpc()
-        self._create_eks_cluster(resource_prefix, enclaves_node_group_launch_template)
+        self._create_eks_cluster(resource_prefix, ray_node_group_launch_template)
 
         # Either create a new IAM role to administrate the cluster or create a new one
 
@@ -55,7 +55,7 @@ class EKSClusterStack(Stack):
         # Either create a new VPC with the options below OR import an existing one by name
         if self.node.try_get_context("create_new_vpc") == "True":
             self.eks_vpc = ec2.Vpc(
-                self, "EKS_Enclaves_VPC",
+                self, "EKS_Ray_VPC",
                 # We are choosing to spread our VPC across 3 availability zones
                 max_azs=2,
                 # cidr=self.node.try_get_context("vpc_cidr"),
@@ -171,19 +171,19 @@ class EKSClusterStack(Stack):
             )
             # eks_node_group.role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
 
-            if self.node.try_get_context("enable_enclaves_nodegroup") == "True":
+            if self.node.try_get_context("enable_ray_nodegroup") == "True":
                 # Create Enclaves NodeGroup
                 enclaves_node_group = self.eks_cluster.add_nodegroup_capacity(
                     'extra-ng',
-                    nodegroup_name='EnclavesNodeGroup',
-                    labels=self.node.try_get_context("enclaves_node_label"),
+                    nodegroup_name='RayNodeGroup',
+                    labels=self.node.try_get_context("node_label"),
                     # label nodes for NodeAffinity & AntiNodeAffinity
                     launch_template_spec=eks.LaunchTemplateSpec(
                         id=enclaves_node_group_launch_template.ref,
                         version=enclaves_node_group_launch_template.attr_latest_version_number,
                     ),
-                    min_size=self.node.try_get_context("enclaves_node_min_capacity"),
-                    max_size=self.node.try_get_context("enclaves_node_max_capacity"),
+                    min_size=self.node.try_get_context("ray_node_min_capacity"),
+                    max_size=self.node.try_get_context("ray_node_max_capacity"),
                 )
 
         if self.node.try_get_context("create_cluster_exports") == "True":
