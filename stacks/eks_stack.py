@@ -19,7 +19,7 @@ class EKSClusterStack(Stack):
                  ray_node_group_launch_template: Construct,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-        self.cluster_name = f"cluster-{resource_prefix}"
+        self.cluster_name = f"{resource_prefix}"
         self._create_iam_role()
         self._create_vpc()
         self._create_eks_cluster(resource_prefix, ray_node_group_launch_template)
@@ -87,7 +87,7 @@ class EKSClusterStack(Stack):
         [Tags.of(subnet).add(f'kubernetes.io/cluster/{self.cluster_name}', 'shared') for subnet in
          self.eks_vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS).subnets]
 
-    def _create_eks_cluster(self, resource_prefix, enclaves_node_group_launch_template) -> None:
+    def _create_eks_cluster(self, resource_prefix, ray_node_group_launch_template) -> None:
         # Create an EKS Cluster
         self.eks_cluster = eks.Cluster(
             self, f'ekscluster',
@@ -173,14 +173,14 @@ class EKSClusterStack(Stack):
 
             if self.node.try_get_context("enable_ray_nodegroup") == "True":
                 # Create Enclaves NodeGroup
-                enclaves_node_group = self.eks_cluster.add_nodegroup_capacity(
+                ray_node_group = self.eks_cluster.add_nodegroup_capacity(
                     'extra-ng',
                     nodegroup_name='RayNodeGroup',
                     labels=self.node.try_get_context("node_label"),
                     # label nodes for NodeAffinity & AntiNodeAffinity
                     launch_template_spec=eks.LaunchTemplateSpec(
-                        id=enclaves_node_group_launch_template.ref,
-                        version=enclaves_node_group_launch_template.attr_latest_version_number,
+                        id=ray_node_group_launch_template.ref,
+                        version=ray_node_group_launch_template.attr_latest_version_number,
                     ),
                     min_size=self.node.try_get_context("ray_node_min_capacity"),
                     max_size=self.node.try_get_context("ray_node_max_capacity"),

@@ -2,3 +2,5 @@ aws-cdk-lib
 constructs>=10.0.0,<11.0.0
 PyYAML==6.0
 cdk-nag
+boto3
+mysql
