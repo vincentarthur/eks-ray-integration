@@ -76,9 +76,10 @@ export CLUSTER_REGION=$(cat cdk.json | grep "REGION" |perl -p -E "s/(.*): \"//g;
 export ROLE_ARN="arn:aws:iam::<acccount_id>:role/<role_id>"
 
 cd ./stacks/kubeflow-manifests/
-# pip install -r tests/e2e/requirements.txt
-# make install-yq
-# make install-kustomize
+pip install -r tests/e2e/requirements.txt
+make install-yq
+make install-kustomize
+make install-helm
 make deploy-kubeflow INSTALLATION_OPTION=kustomize DEPLOYMENT_OPTION=vanilla
 
 # Patch "istio-ingressgateway" in kube-system to LoadBalancer

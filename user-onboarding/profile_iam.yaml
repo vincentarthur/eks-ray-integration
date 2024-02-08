@@ -1,0 +1,13 @@
+apiVersion: kubeflow.org/v1
+kind: Profile
+metadata:
+  name: user1
+spec:
+  owner:
+    kind: User
+    name: user1@example.com
+  plugins:
+  - kind: AwsIamForServiceAccount
+    spec:
+      awsIamRole: arn:aws:iam::536704830979:role/kubeflow-user-irsa-role
+      annotateOnly: true
