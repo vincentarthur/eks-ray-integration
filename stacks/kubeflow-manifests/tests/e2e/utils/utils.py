@@ -257,7 +257,7 @@ def uninstall_helm(chart_name, namespace=None):
 
 
 def kubectl_wait_pods(
-    pods, namespace=None, identifier="app", timeout=120, condition="ready"
+    pods, namespace=None, identifier="app", timeout=240, condition="ready"
 ):
     if namespace:
 

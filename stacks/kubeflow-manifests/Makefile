@@ -53,12 +53,12 @@ install-helm:
 	helm version
 
 install-python:
-	sudo apt install -q python3.8 -y 
+	sudo apt install -q python3 -y 
 	sudo apt install -q python3-pip -y
-	python3.8 -m pip install --upgrade pip
+	python3 -m pip install --upgrade pip
 
 install-python-packages:
-	python3.8 -m pip install -r tests/e2e/requirements.txt
+	python3 -m pip install -r tests/e2e/requirements.txt
 
 install-tools: install-awscli install-eksctl install-kubectl install-kustomize install-yq install-jq install-terraform install-helm install-python install-python-packages
 
@@ -80,7 +80,8 @@ create-eks-cluster: verify-cluster-variables
 	--with-oidc
 
 connect-to-eks-cluster: verify-cluster-variables
-	aws eks update-kubeconfig --name $(CLUSTER_NAME) --region $(CLUSTER_REGION) --role-arn $(ROLE_ARN)
+	# aws eks update-kubeconfig --name $(CLUSTER_NAME) --region $(CLUSTER_REGION) --role-arn $(ROLE_ARN)
+	aws eks update-kubeconfig --name ray-eks-kubeflow --region us-west-2 --role-arn arn:aws:iam::614393260192:role/EKS-Enclaves-ClusterAdminRole047D4FCA-deX8mu6hSQGC
 
 port-forward:
 	$(eval IP_ADDRESS:=127.0.0.1)
@@ -90,12 +91,12 @@ port-forward:
 bootstrap-ack: verify-cluster-variables connect-to-eks-cluster
 	yq e '.cluster.name=env(CLUSTER_NAME)' -i tests/e2e/utils/ack_sm_controller_bootstrap/config.yaml
 	yq e '.cluster.region=env(CLUSTER_REGION)' -i tests/e2e/utils/ack_sm_controller_bootstrap/config.yaml
-	cd tests/e2e && PYTHONPATH=.. python3.8 utils/ack_sm_controller_bootstrap/setup_sm_controller_req.py
+	cd tests/e2e && PYTHONPATH=.. python3 utils/ack_sm_controller_bootstrap/setup_sm_controller_req.py
 
 cleanup-ack-req: verify-cluster-variables
 	yq e '.cluster.name=env(CLUSTER_NAME)' -i tests/e2e/utils/ack_sm_controller_bootstrap/config.yaml
 	yq e '.cluster.region=env(CLUSTER_REGION)' -i tests/e2e/utils/ack_sm_controller_bootstrap/config.yaml
-	cd tests/e2e && PYTHONPATH=.. python3.8 utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py
+	cd tests/e2e && PYTHONPATH=.. python3 utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py
 
 deploy-kubeflow: bootstrap-ack
 	$(eval DEPLOYMENT_OPTION:=vanilla)
@@ -103,12 +104,13 @@ deploy-kubeflow: bootstrap-ack
 	$(eval PIPELINE_S3_CREDENTIAL_OPTION:=irsa)
 	export AWS_DEFAULT_REGION=us-west-2
 	export AWS_REGION=us-west-2
-	cd tests/e2e && PYTHONPATH=.. python3.8 utils/kubeflow_installation.py --deployment_option $(DEPLOYMENT_OPTION) --installation_option $(INSTALLATION_OPTION) --pipeline_s3_credential_option $(PIPELINE_S3_CREDENTIAL_OPTION) --cluster_name $(CLUSTER_NAME)
+	# cd tests/e2e && PYTHONPATH=.. python3.8 utils/kubeflow_installation.py --deployment_option $(DEPLOYMENT_OPTION) --installation_option $(INSTALLATION_OPTION) --pipeline_s3_credential_option $(PIPELINE_S3_CREDENTIAL_OPTION) --cluster_name $(CLUSTER_NAME)
+	cd tests/e2e && PYTHONPATH=.. python3 utils/kubeflow_installation.py --deployment_option $(DEPLOYMENT_OPTION) --installation_option $(INSTALLATION_OPTION) --pipeline_s3_credential_option $(PIPELINE_S3_CREDENTIAL_OPTION) --cluster_name $(CLUSTER_NAME)
 
 delete-kubeflow:
 	$(eval DEPLOYMENT_OPTION:=vanilla)
 	$(eval INSTALLATION_OPTION:=kustomize)
-	cd tests/e2e && PYTHONPATH=.. python3.8 utils/kubeflow_uninstallation.py --deployment_option $(DEPLOYMENT_OPTION) --installation_option $(INSTALLATION_OPTION)
+	cd tests/e2e && PYTHONPATH=.. python3 utils/kubeflow_uninstallation.py --deployment_option $(DEPLOYMENT_OPTION) --installation_option $(INSTALLATION_OPTION)
 
 helmify:
-	PYTHONPATH=. python3.8 tools/helmify/src/kustomize_to_helm_automation.py
+	PYTHONPATH=. python3 tools/helmify/src/kustomize_to_helm_automation.py

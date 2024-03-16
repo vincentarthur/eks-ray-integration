@@ -73,18 +73,19 @@
 # echo "Attached policy. And KSA annotation has been completed in EKS provision stage (IRSA_Stack)."
 export CLUSTER_NAME=$(cat cdk.json | grep "eks_cluster_name" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
 export CLUSTER_REGION=$(cat cdk.json | grep "REGION" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
-export ROLE_ARN="arn:aws:iam::<acccount_id>:role/<role_id>"
+export ROLE_ARN="arn:aws:iam::614393260192:role/ray-on-eks-irsa-role"
 
-cd ./stacks/kubeflow-manifests/
+cd ./stacks/
+
+export KUBEFLOW_RELEASE_VERSION=v1.7.0
+export AWS_RELEASE_VERSION=v1.7.0-aws-b1.0.3
+git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
+git checkout ${AWS_RELEASE_VERSION}
+# git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
+
+cd ./kubeflow-manifests
 pip install -r tests/e2e/requirements.txt
 make install-yq
 make install-kustomize
 make install-helm
 make deploy-kubeflow INSTALLATION_OPTION=kustomize DEPLOYMENT_OPTION=vanilla
-
-# Patch "istio-ingressgateway" in kube-system to LoadBalancer
-echo "Patching Kubeflow entry point from ClusterIP to LoadBalancer"
-kubectl patch svc/istio-ingressgateway -n istio-system  -p '{"spec":{"type": "LoadBalancer"}}'
-alb=$(kubectl get svc/istio-ingressgateway -n istio-system --output jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-echo "Patched to Loadbalancer. Please access Kubeflow via - http://${alb}"
-

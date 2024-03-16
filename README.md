@@ -86,3 +86,6 @@ Please follow below sections to start and experience.
 - [Summary](./readmes/10_summary/summary.md)
 - [FAQ](./readmes/10_summary/faq.md)
 - [Cleanup](./readmes/10_summary/cleanup.md)
+- 
+
+# Run - sudo dnf install -y mariadb105-devel gcc python3-devel

@@ -24,3 +24,8 @@ echo "Installed eksctl."
 cd stacks/kubeflow-manifests/
 make install-kustomize
 echo "Kustomize installed"
+
+### Install mysqlclient
+sudo dnf install -y mariadb105-devel gcc python3-devel
+sudo yum install gcc openssl-devel bzip2-devel libffi-devel  zlib-devel
+pip install mysqlclient
