@@ -79,16 +79,17 @@ create-eks-cluster: verify-cluster-variables
 	--managed \
 	--with-oidc
 
-connect-to-eks-cluster: verify-cluster-variables
-	# aws eks update-kubeconfig --name $(CLUSTER_NAME) --region $(CLUSTER_REGION) --role-arn $(ROLE_ARN)
-	aws eks update-kubeconfig --name ray-eks-kubeflow --region us-west-2 --role-arn arn:aws:iam::614393260192:role/EKS-Enclaves-ClusterAdminRole047D4FCA-deX8mu6hSQGC
+# connect-to-eks-cluster: verify-cluster-variables
+# 	# aws eks update-kubeconfig --name $(CLUSTER_NAME) --region $(CLUSTER_REGION) --role-arn $(ROLE_ARN)
+# 	aws eks update-kubeconfig --name ray-eks-kubeflow --region us-west-2 --role-arn arn:aws:iam::xxx:role/EKS-Enclaves-ClusterAdminRole047D4FCA-deX8mu6hSQGC
 
 port-forward:
 	$(eval IP_ADDRESS:=127.0.0.1)
 	$(eval PORT:=8080)
 	kubectl port-forward svc/istio-ingressgateway --address $(IP_ADDRESS) -n istio-system $(PORT):80
 
-bootstrap-ack: verify-cluster-variables connect-to-eks-cluster
+# Removed connect-to-eks-cluster
+bootstrap-ack: verify-cluster-variables 
 	yq e '.cluster.name=env(CLUSTER_NAME)' -i tests/e2e/utils/ack_sm_controller_bootstrap/config.yaml
 	yq e '.cluster.region=env(CLUSTER_REGION)' -i tests/e2e/utils/ack_sm_controller_bootstrap/config.yaml
 	cd tests/e2e && PYTHONPATH=.. python3 utils/ack_sm_controller_bootstrap/setup_sm_controller_req.py
