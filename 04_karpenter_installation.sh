@@ -65,7 +65,7 @@ echo "Karpetner Helm installed to EKS."
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.14.5/nvidia-device-plugin.yml
 echo "Installed Nvidia Device Plugin."
 
-# ##Create nodepool for scaling --- Test
+# ##Create nodepool for scaling
 cat <<EOF | envsubst | kubectl apply -f -
 apiVersion: karpenter.sh/v1beta1
 kind: NodePool

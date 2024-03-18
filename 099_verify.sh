@@ -17,27 +17,12 @@ spec:
       labels:
         app: inflate
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: workload
-                operator: In
-                values:
-                - gpu
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: workload
-                operator: In
-                values:
-                - gpu
       containers:
         - name: inflate
           image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2
           resources:
+            requests:
+              nvidia.com/gpu: 1 # requesting 1 GPU
             limits:
               nvidia.com/gpu: 1 # requesting 1 GPU
       tolerations:

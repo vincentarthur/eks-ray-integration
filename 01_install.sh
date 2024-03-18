@@ -13,7 +13,7 @@ cdk synth
 
 cdk deploy --all --require-approval never
 
-# Install EFS Addon
+# Install EBS Addon
 eksctl create iamserviceaccount \
     --name ebs-csi-controller-sa \
     --namespace kube-system \
