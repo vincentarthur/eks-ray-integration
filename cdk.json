@@ -30,7 +30,7 @@
     "deploy_aws_ebs_csi": "True",
     "deploy_aws_efs_csi": "True",
     "deploy_cluster_autoscaler": "True",
-    "enable_ray_nodegroup": "True",
+    "enable_ray_nodegroup": "False",
     "enable_ray_ng_max_instance_count": 6,
     "ray_node_label": {},
     "ray_node_min_capacity": 2,
@@ -38,6 +38,7 @@
     "ray_node_iam_role": "ray-nodegroup-iam-role",
     "ray_node_disk_size": 50,
     "ray_node_machine_type": "r5.2xlarge",
-    "ray_node_ebs_iops": 500
+    "ray_node_ebs_iops": 500,
+    "karpenter_version": "v0.32.0"
   }
 }
