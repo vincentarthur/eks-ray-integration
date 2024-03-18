@@ -89,7 +89,7 @@ spec:
           values: ["on-demand"] 
         - key: node.kubernetes.io/instance-type
           operator: In
-          values: ["g5.xlarge"]
+          values: ["g5.2xlarge"]
       taints:
         - key: nvidia.com/gpu
           value: "true"
@@ -115,8 +115,8 @@ spec:
   blockDeviceMappings:
     - deviceName: /dev/xvda
       ebs:
-        volumeSize: 50Gi
-        volumeType: gp3
+        volumeSize: 80Gi
+        volumeType: gp2
         encrypted: true
         deleteOnTermination: true
   subnetSelectorTerms:
