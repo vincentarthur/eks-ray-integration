@@ -20,8 +20,9 @@ export ACCOUNT_ID=$(grep "ACCOUNT_ID" ../cdk.json | perl -p -E "s/(.*): \"//g;s/
 KUBEFLOW_USER_IRSA_ROLE="kubeflow-user-irsa-role"
 
 if [[ $# -le 1 ]];then
-  echo "Required two parameters : User Name (Email) and EFS System ID(fs-xxx). Namespace will be prefix before @ symbal."
-  echo "For example: user name \"user2@example.com\", the namespace will be user2. Which should align to Keycloak profile."
+  #echo "Required two parameters : User Name (Email) and EFS System ID(fs-xxx). Namespace will be prefix before @ symbal."
+  echo "Required two parameters : User Name (Email) and User Namespace(fs-xxx)."
+  #echo "For example: user name \"user2@example.com\", the namespace will be user2. Which should align to Keycloak profile."
   exit 999
 fi
 
@@ -31,8 +32,8 @@ if [[ ! "$1" =~ "@" ]];then
 fi
 
 PROFILE_USER=$1
-PROFILE_NAMESPACE=$(echo $PROFILE_USER|cut -d "@" -f 1)
-EFS_SYSTEM_ID=$2
+PROFILE_NAMESPACE=$2 #$(echo $PROFILE_USER|cut -d "@" -f 1)
+#EFS_SYSTEM_ID=$2
 
 #1. Create User Namespace
 echo "#1 - Create user namespace"
@@ -69,21 +70,21 @@ if [[ $irsa_exists == "" ]];then
 EOF
 
     # example policy, change accordingly, like EFS
-    cat <<EOF > s3_policy.json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-           {
-        "Effect": "Allow",
-        "Action": "s3:*",
-        "Resource": [
-            "arn:aws:s3:::536704830979-kubeflow-ray-bucket",
-            "arn:aws:s3:::536704830979-kubeflow-ray-bucket/*"
-              ]
-           }
-     ]
-}
-EOF
+#     cat <<EOF > s3_policy.json
+# {
+#     "Version": "2012-10-17",
+#     "Statement": [
+#           {
+#         "Effect": "Allow",
+#         "Action": "s3:*",
+#         "Resource": [
+#             "arn:aws:s3:::536704830979-kubeflow-ray-bucket",
+#             "arn:aws:s3:::536704830979-kubeflow-ray-bucket/*"
+#               ]
+#           }
+#      ]
+# }
+# EOF
 
 
     aws iam create-role --role-name kubeflow-user-irsa-role --assume-role-policy-document file://trust.json 1> /dev/null
@@ -92,9 +93,9 @@ EOF
         echo "IAM Role \"kubeflow-user-irsa-role\" created."
     fi
     
-    aws --region $CLUSTER_REGION iam put-role-policy --role-name kubeflow-user-irsa-role --policy-name kf-pipeline-policy --policy-document file://s3_policy.json  
+    # aws --region $CLUSTER_REGION iam put-role-policy --role-name kubeflow-user-irsa-role --policy-name kf-pipeline-policy --policy-document file://s3_policy.json  
     
-    echo "IAM Policy of \"kubeflow-user-irsa-role\" updated."
+    # echo "IAM Policy of \"kubeflow-user-irsa-role\" updated."
 
 else
     echo "IAM Role already exists, skip IAM role creation."
@@ -130,15 +131,15 @@ fi
 
 # 3. Create PVC/PV in individual namespace
 # Assume EFS & SC already created, and set SC to default
-echo "3 - Install PVC/PV to individual namespace [${PROFILE_NAMESPACE}]"
-yq e '.metadata.namespace = env(PROFILE_NAMESPACE)' -i ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
-yq e '.metadata.name = env(PROFILE_NAMESPACE)_PVC' -i ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
+# echo "3 - Install PVC/PV to individual namespace [${PROFILE_NAMESPACE}]"
+# yq e '.metadata.namespace = env(PROFILE_NAMESPACE)' -i ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
+# yq e '.metadata.name = env(PROFILE_NAMESPACE)_PVC' -i ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
 
-kubectl apply -f ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
+# kubectl apply -f ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
 
-if [[ $? -eq 0 ]];then
-    echo "Created PVC for Namspace: ${PROFILE_NAMESPACE}."
-fi
+# if [[ $? -eq 0 ]];then
+#     echo "Created PVC for Namspace: ${PROFILE_NAMESPACE}."
+# fi
 
 
 echo "4 - Intall RayOperator and KubeRay to individual Namespace [${PROFILE_NAMESPACE}]"

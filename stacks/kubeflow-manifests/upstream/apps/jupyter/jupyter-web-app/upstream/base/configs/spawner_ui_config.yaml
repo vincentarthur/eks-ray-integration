@@ -25,6 +25,8 @@ spawnerFormDefaults:
     - kubeflownotebookswg/jupyter-pytorch-cuda-full:v1.7.0
     - kubeflownotebookswg/jupyter-tensorflow-full:v1.7.0
     - kubeflownotebookswg/jupyter-tensorflow-cuda-full:v1.7.0
+    - public.ecr.aws/kubeflow-on-aws/notebook-servers/jupyter-pytorch:1.12.1-cpu-py38-ubuntu20.04-ec2-v1.2
+    - public.ecr.aws/kubeflow-on-aws/notebook-servers/jupyter-pytorch:1.12.1-gpu-py38-cu116-ubuntu20.04-ec2-v1.2
   imageGroupOne:
     # The container Image for the user's Group One Server
     # The annotation `notebooks.kubeflow.org/http-rewrite-uri: /`

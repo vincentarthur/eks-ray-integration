@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  labels:
+    app.kubernetes.io/component: ray-dashboard
+    app.kubernetes.io/name: ray-dashboard
+    application-crd-id: ray-dashboard
+  name: ray-dashboard
+  namespace: kubeflow
+spec:
+  gateways:
+  - kubeflow-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /raydashboard/
+    rewrite:
+      uri: /raydashboard
+    route:
+    - destination:
+        host: ml-pipeline-ui.kubeflow.svc.cluster.local
+        port:
+          number: 80
+    timeout: 300s
