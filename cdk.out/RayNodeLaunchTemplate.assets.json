@@ -1,0 +1,20 @@
+{
+  "version": "36.0.0",
+  "files": {
+    "1ad12c2d2e9c65ba39a867a38c0f401b9d307492fafcaf8b7ccb4e226d58ac65": {
+      "source": {
+        "path": "RayNodeLaunchTemplate.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "536704830979-us-west-2": {
+          "bucketName": "cdk-hnb659fds-assets-536704830979-us-west-2",
+          "objectKey": "1ad12c2d2e9c65ba39a867a38c0f401b9d307492fafcaf8b7ccb4e226d58ac65.json",
+          "region": "us-west-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::536704830979:role/cdk-hnb659fds-file-publishing-role-536704830979-us-west-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

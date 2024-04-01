@@ -50,13 +50,13 @@ export KARPENTER_IAM_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAM
 export CLUSTER_ENDPOINT="$(aws eks describe-cluster --name ${CLUSTER_NAME} --query "cluster.endpoint" --output text)"
 
 helm upgrade --install --namespace karpenter --create-namespace \
-karpenter oci://public.ecr.aws/karpenter/karpenter \
---version ${KARPENTER_VERSION} \
---set "serviceAccount.annotations.eks\.amazonaws\.com/role-arn=${KARPENTER_IAM_ROLE_ARN}" \
---set settings.clusterName=${CLUSTER_NAME} \
---set settings.clusterEndpoint=${CLUSTER_ENDPOINT} \
---set aws.defaultInstanceProfile=${KARPENTER_IAM_ROLE_ARN##*/} \
---wait
+  karpenter oci://public.ecr.aws/karpenter/karpenter \
+  --version ${KARPENTER_VERSION} \
+  --set "serviceAccount.annotations.eks\.amazonaws\.com/role-arn=${KARPENTER_IAM_ROLE_ARN}" \
+  --set settings.clusterName=${CLUSTER_NAME} \
+  --set settings.clusterEndpoint=${CLUSTER_ENDPOINT} \
+  --set aws.defaultInstanceProfile=${KARPENTER_IAM_ROLE_ARN##*/} \
+  --wait
  
 echo "Karpetner Helm installed to EKS."
 
@@ -102,7 +102,7 @@ spec:
   #   cpu: 1000
   disruption:
     consolidationPolicy: WhenUnderutilized
-    expireAfter: 10m #720h # 30 * 24h = 720h
+    expireAfter: 720h # 30 * 24h = 720h
 ---
 apiVersion: karpenter.k8s.aws/v1beta1
 kind: EC2NodeClass

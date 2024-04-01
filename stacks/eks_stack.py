@@ -50,6 +50,7 @@ class EKSClusterStack(Stack):
                                                                  "existing_admin_role_arn")
                                                              )
 
+
     def _create_vpc(self) -> None:
         """Deploys a VPC and needed subnets"""
         # Either create a new VPC with the options below OR import an existing one by name
@@ -86,6 +87,7 @@ class EKSClusterStack(Stack):
         # for Private Subnets
         [Tags.of(subnet).add(f'kubernetes.io/cluster/{self.cluster_name}', 'shared') for subnet in
          self.eks_vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS).subnets]
+
 
     def _create_eks_cluster(self, resource_prefix, ray_node_group_launch_template) -> None:
         # Create an EKS Cluster
@@ -171,20 +173,20 @@ class EKSClusterStack(Stack):
             )
             # eks_node_group.role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
 
-            if self.node.try_get_context("enable_ray_nodegroup") == "True":
-                # Create Enclaves NodeGroup
-                ray_node_group = self.eks_cluster.add_nodegroup_capacity(
-                    'extra-ng',
-                    nodegroup_name='RayNodeGroup',
-                    labels=self.node.try_get_context("node_label"),
-                    # label nodes for NodeAffinity & AntiNodeAffinity
-                    launch_template_spec=eks.LaunchTemplateSpec(
-                        id=ray_node_group_launch_template.ref,
-                        version=ray_node_group_launch_template.attr_latest_version_number,
-                    ),
-                    min_size=self.node.try_get_context("ray_node_min_capacity"),
-                    max_size=self.node.try_get_context("ray_node_max_capacity"),
-                )
+            # if self.node.try_get_context("enable_ray_nodegroup") == "True":
+            #     # Create Enclaves NodeGroup
+            #     ray_node_group = self.eks_cluster.add_nodegroup_capacity(
+            #         'extra-ng',
+            #         nodegroup_name='RayNodeGroup',
+            #         labels=self.node.try_get_context("node_label"),
+            #         # label nodes for NodeAffinity & AntiNodeAffinity
+            #         launch_template_spec=eks.LaunchTemplateSpec(
+            #             id=ray_node_group_launch_template.ref,
+            #             version=ray_node_group_launch_template.attr_latest_version_number,
+            #         ),
+            #         min_size=self.node.try_get_context("ray_node_min_capacity"),
+            #         max_size=self.node.try_get_context("ray_node_max_capacity"),
+            #     )
 
         if self.node.try_get_context("create_cluster_exports") == "True":
             # Output the EKS Cluster Name and Export it
