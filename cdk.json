@@ -5,10 +5,10 @@
     "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": false,
     "@aws-cdk/aws-rds:lowercaseDbIdentifier": false,
     "@aws-cdk/core:stackRelativeExports": false,
-    "ACCOUNT_ID": "536704830979",
+    "ACCOUNT_ID": "614393260192",
     "REGION": "us-west-2",
     "create_new_cluster_admin_role": "True",
-    "existing_admin_role_arn": "",
+    "existing_admin_role_name": "",
     "eks_cluster_name": "ray-eks-kubeflow",
     "create_new_vpc": "True",
     "vpc_cidr": "10.0.0.0/22",
@@ -17,6 +17,9 @@
     "existing_vpc_name": "VPC",
     "eks_version": "1.27",
     "eks_deploy_managed_nodegroup": "True",
+    "eks_default_node_role_create_if_not_exists": "True",
+    "eks_default_node_role_name": "ray-eks-default-noderole",
+    "eks_default_node_role_managed_policies": ["AmazonEC2ContainerRegistryReadOnly", "AmazonEKS_CNI_Policy", "AmazonEKSWorkerNodePolicy", "AmazonSSMManagedInstanceCore"],
     "eks_node_quantity": 2,
     "eks_node_max_quantity": 5,
     "eks_node_min_quantity": 1,
@@ -30,6 +33,6 @@
     "deploy_aws_ebs_csi": "True",
     "deploy_aws_efs_csi": "True",
     "deploy_cluster_autoscaler": "True",
-    "karpenter_version": "v0.32.0"
+    "karpenter_version": "0.35.1"
   }
 }

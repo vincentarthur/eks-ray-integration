@@ -33,7 +33,7 @@ eksctl create iamidentitymapping \
 --group system:nodes
  
 # # # Create IAM Role and SA for Karpenter Controller
-eksctl utils associate-iam-oidc-provider --cluster ${CLUSTER_NAME} –approve
+eksctl utils associate-iam-oidc-provider --cluster ${CLUSTER_NAME} --approve
 
 eksctl create iamserviceaccount \
 --cluster "${CLUSTER_NAME}" --name karpenter --namespace karpenter \
@@ -89,7 +89,7 @@ spec:
           values: ["on-demand"] 
         - key: node.kubernetes.io/instance-type
           operator: In
-          values: ["g5.2xlarge"]
+          values: ["g5.xlarge"]
       taints:
         - key: nvidia.com/gpu
           value: "true"
@@ -121,7 +121,8 @@ spec:
         deleteOnTermination: true
   subnetSelectorTerms:
     - tags:
-        kubernetes.io/cluster/${CLUSTER_NAME}: shared
+        # kubernetes.io/cluster/${CLUSTER_NAME}: shared
+        aws-cdk:subnet-name: Private
   securityGroupSelectorTerms:
     - tags:
         aws:eks:cluster-name: ${CLUSTER_NAME}

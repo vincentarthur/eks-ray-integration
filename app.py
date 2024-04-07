@@ -17,10 +17,6 @@ from cdk_nag import AwsSolutionsChecks, NagSuppressions
 # being updated to use `cdk`.  You may delete this import if you don't need it.
 from stacks.eks_stack import EKSClusterStack
 from stacks.ray_launch_template_stack import RayNodeLaunchStack
-# from stacks.enclaves_launch_template_stack import EnclavesNodeLaunchStack
-# from stacks.nitro_enclaves_plugin_stack import DevicePluginInstallationStack
-# from stacks.arbiter_server_stack import FlArbiterServerStack
-# from stacks.irsa_stack import IRSAStack
 
 
 def _k8s_manifest_yaml_to_json(file_path):
@@ -60,50 +56,14 @@ ray_node_launch_stack = RayNodeLaunchStack(
 )
 
 ############################################################
-## Step 2 - Create EKS cluster with Enclaves nodegroup
+## Step 2 - Create EKS cluster
 ############################################################
 eks_stack = EKSClusterStack(
     app,
-    f'EKS-Enclaves',
+    f'EKS-Ray',
     env=cdk_environment,
     resource_prefix=resource_prefix,
     ray_node_group_launch_template=ray_node_launch_stack.lt
 )
-
-# ############################################################
-# ## Step 3 - Annotate KSA for 02_setup_irsa.sh
-# ############################################################
-# ns_manifest = _k8s_manifest_yaml_to_json('stacks/manifest/aws-nitro-enclaves-k8s-ds-ns.yaml')
-# iam_role_name = app.node.try_get_context("enclaves_iam_role")
-# irsa_stack = IRSAStack(
-#     app,
-#     f'IRSAStack',
-#     env=cdk_environment,
-#     eks_cluster=eks_stack.eks_cluster,
-#     namespace=app.node.try_get_context("enclaves_namespace"),
-#     ksa=app.node.try_get_context("enclaves_k8s_service_account"),
-#     iam_role_arn="arn:aws:iam::{}:role/{}".format(account_id, iam_role_name)
-# )
-
-# irsa_stack.add_dependency(eks_stack)
-
-# ###########################################################
-# Step 4 - install device plugin (Manifest)
-#           and Annotate KSA for 02_setup_irsa.sh
-# ###########################################################
-# daemonset_manifest = _k8s_manifest_yaml_to_json('stacks/manifest/aws-nitro-enclaves-k8s-ds-daemonset.yaml')
-
-# DevicePluginInstallationStack(
-#     app,
-#     f'DevicePluginStack',
-#     env=cdk_environment,
-#     eks_cluster=eks_stack.eks_cluster,
-#     daemonset_manifest=daemonset_manifest
-
-# ).add_dependency(eks_stack)
-
-# FlArbiterServerStack(app,
-#                      "ArbiterServer", 
-#                      disk_size = app.node.try_get_context("arbiter_server_disk_size"))
 
 app.synth()

@@ -19,35 +19,72 @@ class EKSClusterStack(Stack):
                  ray_node_group_launch_template: Construct,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+        
+        self.cluster_admin_role = None
+        self.default_node_role = None
+        self.account_id = self.node.try_get_context("ACCOUNT_ID")
+        self.existing_admin_role_name = self.node.try_get_context("existing_admin_role_name")
+        
         self.cluster_name = f"{resource_prefix}"
         self._create_iam_role()
         self._create_vpc()
         self._create_eks_cluster(resource_prefix, ray_node_group_launch_template)
 
-        # Either create a new IAM role to administrate the cluster or create a new one
+
 
     def _create_iam_role(self) -> None:
+        
         if self.node.try_get_context("create_new_cluster_admin_role") == "True":
-            self.cluster_admin_role = iam.Role(self, "ClusterAdminRole",
+            
+            self.cluster_admin_role = iam.Role(self, 
+                                              "ClusterAdminRole",
                                                assumed_by=iam.CompositePrincipal(
-                                                   iam.AccountRootPrincipal(),
-                                                   iam.ServicePrincipal(
-                                                       "ec2.amazonaws.com")
-                                               ))
-            cluster_admin_policy_statement_json_1 = {
+                                                    iam.AccountRootPrincipal(),
+                                                    iam.ServicePrincipal("ec2.amazonaws.com"))
+                                            )
+                                            
+            cluster_admin_policy_statement_json = {
                 "Effect": "Allow",
                 "Action": [
                     "eks:DescribeCluster"
                 ],
                 "Resource": "*"
             }
-            self.cluster_admin_role.add_to_principal_policy(
-                iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_1))
+            self.cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json))
+            
         else:
             # You'll also need to add a trust relationship to ec2.amazonaws.com to sts:AssumeRole to this as well
-            self.cluster_admin_role = iam.Role.from_role_arn(self, "ClusterAdminRole",
-                                                             role_arn=self.node.try_get_context(
-                                                                 "existing_admin_role_arn")
+            self.cluster_admin_role = iam.Role.from_role_arn(self, 
+                                                            "ClusterAdminRole",
+                                                             role_arn=f"arn:aws:iam::{self.account_id}:role/{self.existing_admin_role_name}"
+                                                             )
+                                                             
+        
+        """
+          Create default_node_role if not exists.
+        """
+        if self.node.try_get_context("eks_default_node_role_create_if_not_exists") == "True":
+            
+            # Create managed_policies
+            _managed_policies = [ iam.ManagedPolicy.from_aws_managed_policy_name(_name) for _name in self.node.try_get_context("eks_default_node_role_managed_policies") ]
+            
+            self.default_node_role = iam.Role(self, 
+                                              "DefaultNodeRole",
+                                               assumed_by=iam.CompositePrincipal(
+                                                    iam.AccountRootPrincipal(),
+                                                    iam.ServicePrincipal("ec2.amazonaws.com")
+                                                ),
+                                                managed_policies = _managed_policies
+                                            )
+                                            
+        
+        else:
+            
+            _eks_default_node_role_name = self.node.try_get_context("eks_default_node_role_name")
+            
+            self.default_node_role = iam.Role.from_role_arn(self, 
+                                                            "DefaultNodeRole",
+                                                             role_arn=f"arn:aws:iam::{self.account_id}:role/{_eks_default_node_role_name}"
                                                              )
 
 
@@ -57,10 +94,10 @@ class EKSClusterStack(Stack):
         if self.node.try_get_context("create_new_vpc") == "True":
             self.eks_vpc = ec2.Vpc(
                 self, "EKS_Ray_VPC",
-                # We are choosing to spread our VPC across 3 availability zones
                 max_azs=2,
                 # cidr=self.node.try_get_context("vpc_cidr"),
                 ip_addresses=ec2.IpAddresses.cidr(self.node.try_get_context("vpc_cidr")),
+                
                 subnet_configuration=[
                     # 2 x Public Subnets (1 per AZ) with 64 IPs each for our ALBs and NATs
                     ec2.SubnetConfiguration(
@@ -68,6 +105,7 @@ class EKSClusterStack(Stack):
                         name="Public",
                         cidr_mask=self.node.try_get_context("vpc_cidr_mask_public")
                     ),
+                    
                     # 2 x Private Subnets (1 per AZ) with 256 IPs each for our Nodes and Pods
                     ec2.SubnetConfiguration(
                         subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
@@ -96,11 +134,11 @@ class EKSClusterStack(Stack):
             cluster_name=self.cluster_name,
             vpc=self.eks_vpc,
             masters_role=self.cluster_admin_role,
+            
             # Make our cluster's control plane accessible only within our private VPC
             # This means that we'll have to ssh to a jumpbox/bastion or set up a VPN to manage it
             endpoint_access=eks.EndpointAccess.PUBLIC_AND_PRIVATE,
-            version=eks.KubernetesVersion.of(
-                self.node.try_get_context("eks_version")),
+            version=eks.KubernetesVersion.of(self.node.try_get_context("eks_version")),
             default_capacity=0,
 
             # """
@@ -151,8 +189,7 @@ class EKSClusterStack(Stack):
                 node_capacity_type = eks.CapacityType.ON_DEMAND
 
             # Parse the instance types as comma seperated list turn into instance_types[]
-            instance_types_context = self.node.try_get_context(
-                "eks_node_instance_type").split(",")
+            instance_types_context = self.node.try_get_context("eks_node_instance_type").split(",")
             instance_types = []
             for value in instance_types_context:
                 instance_type = ec2.InstanceType(value)
@@ -168,25 +205,12 @@ class EKSClusterStack(Stack):
                 # The default in CDK is to force upgrades through even if they violate - it is safer to not do that
                 force_update=False,
                 instance_types=instance_types,
-                release_version=self.node.try_get_context(
-                    "eks_node_ami_version")
+                release_version=self.node.try_get_context("eks_node_ami_version"),
+                node_role=self.default_node_role
             )
+            
             # eks_node_group.role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"))
 
-            # if self.node.try_get_context("enable_ray_nodegroup") == "True":
-            #     # Create Enclaves NodeGroup
-            #     ray_node_group = self.eks_cluster.add_nodegroup_capacity(
-            #         'extra-ng',
-            #         nodegroup_name='RayNodeGroup',
-            #         labels=self.node.try_get_context("node_label"),
-            #         # label nodes for NodeAffinity & AntiNodeAffinity
-            #         launch_template_spec=eks.LaunchTemplateSpec(
-            #             id=ray_node_group_launch_template.ref,
-            #             version=ray_node_group_launch_template.attr_latest_version_number,
-            #         ),
-            #         min_size=self.node.try_get_context("ray_node_min_capacity"),
-            #         max_size=self.node.try_get_context("ray_node_max_capacity"),
-            #     )
 
         if self.node.try_get_context("create_cluster_exports") == "True":
             # Output the EKS Cluster Name and Export it
@@ -196,6 +220,7 @@ class EKSClusterStack(Stack):
                 description="The name of the EKS Cluster",
                 export_name="EKSClusterName"
             )
+            
             # Output the EKS Cluster OIDC Issuer and Export it
             CfnOutput(
                 self, "EKSClusterOIDCProviderARN",
@@ -203,6 +228,7 @@ class EKSClusterStack(Stack):
                 description="The EKS Cluster's OIDC Provider ARN",
                 export_name="EKSClusterOIDCProviderARN"
             )
+            
             # Output the EKS Cluster kubectl Role ARN
             CfnOutput(
                 self, "EKSClusterKubectlRoleARN",
@@ -210,6 +236,7 @@ class EKSClusterStack(Stack):
                 description="The EKS Cluster's kubectl Role ARN",
                 export_name="EKSClusterKubectlRoleARN"
             )
+            
             # Output the EKS Cluster SG ID
             CfnOutput(
                 self, "EKSSGID",
