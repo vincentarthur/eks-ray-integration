@@ -33,6 +33,9 @@
     "deploy_aws_ebs_csi": "True",
     "deploy_aws_efs_csi": "True",
     "deploy_cluster_autoscaler": "True",
-    "karpenter_version": "0.35.1"
+    "karpenter_version": "0.35.1",
+    "efs_default_claim_name": "kubeflow-efs",
+    "enable_user_irsa": "False",
+    "user_irsa_iam_role": "<if True, then insert>"
   }
 }

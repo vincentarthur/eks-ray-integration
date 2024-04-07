@@ -2,10 +2,10 @@
 set -e
 
 pip3 install -r requirements.txt
-export ACCOUNT_ID=$(grep "ACCOUNT_ID" ./cdk.json | perl -p -E "s/(.*): \"//g;s/\",//g")
-export CLUSTER_NAME=$(cat cdk.json | grep "eks_cluster_name" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
-export AWS_REGION=$(grep "REGION" ./cdk.json | perl -p -E "s/(.*): \"//g;s/\",//g")
-export AWS_DEFAULT_REGION=$(grep "REGION" ./cdk.json | perl -p -E "s/(.*): \"//g;s/\",//g")
+export ACCOUNT_ID=$(grep "ACCOUNT_ID" ./cdk.json | perl -p -E "s/(.*): \"//g;s/\",?//g")
+export CLUSTER_NAME=$(cat cdk.json | grep "eks_cluster_name" |perl -p -E "s/(.*): \"//g;s/\",?//g;s/\s//g")
+export AWS_REGION=$(grep "REGION" ./cdk.json | perl -p -E "s/(.*): \"//g;s/\",?//g")
+export AWS_DEFAULT_REGION=$(grep "REGION" ./cdk.json | perl -p -E "s/(.*): \"//g;s/\",?//g")
 
 cdk bootstrap "aws://${ACCOUNT_ID}/${AWS_REGION}"
 

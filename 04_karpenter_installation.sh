@@ -7,8 +7,8 @@
 export KARPENTER_VERSION="0.35.1"
 export K8S_VERSION="1.27"
 export AWS_PARTITION="aws" # if you are not using standard partitions, you may need to configure to aws-cn / aws-us-gov
-export CLUSTER_NAME=$(cat cdk.json | grep "eks_cluster_name" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
-export CLUSTER_REGION=$(cat cdk.json | grep "REGION" |perl -p -E "s/(.*): \"//g;s/\",//g;s/\s//g")
+export CLUSTER_NAME=$(cat cdk.json | grep "eks_cluster_name" |perl -p -E "s/(.*): \"//g;s/\",?//g;s/\s//g")
+export CLUSTER_REGION=$(cat cdk.json | grep "REGION" |perl -p -E "s/(.*): \"//g;s/\",?//g;s/\s//g")
 export AWS_DEFAULT_REGION=${CLUSTER_REGION}
 export AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 export TEMPOUT="$(mktemp)"
