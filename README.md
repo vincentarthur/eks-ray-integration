@@ -1,91 +1,123 @@
 ### Background
 
-This repository focuses on using `Nitro Enclaves` (Trust Execution Environment) of Amazon Web Services to implement
-privacy data computing and collaboration.
+This repository focuses on utilizing Amazon EKS, Amazon EFS, Ray.IO and Kubeflow to build a Quantitative Investment Research Platform.
+Along with KeyCloak as authentication framework.
 
 Below cloud services from Amazon Web Services will be involved:
 
 - Amazon EKS
-- AWS Nitro Enclaves
 - AWS KMS
 - AWS VPC
 - IAM
 - AWS ECR
 - CDK (deployment toolkit)
-
-In this repo, it will be split into below sections:
-
-- Prerequisites
-- EKS Deployment
-- Hello World App demo
-- Nitro Enclave and KMS Integration Demo
-- Medical Image Diagnosis Demo
-    - Single AWS Account
-    - Multiple AWS Account
-
-Please follow below sections to start and experience.
+- Amazon EFS
 
 ---
 
 ### Prerequisites
+Configure `cdk.json` with changing below items:
+- ACCOUNT_ID
+- REGION
+- "eks_cluster_name" (if needed)
+- "eks_default_node_role_managed_policies" (verify if addtional permission should be added)
+- "enable_user_irsa": Enable IRSA or not (IRSA = IAM role for Service Account, allowing K8s service account to act as IAM role)
+- "user_irsa_iam_role": IAM Role name for IRSA
 
-- [01. Create IAM Role for Workshop Deployment](./readmes/01_prerequisites/01_workshop_deployment_iam_creation.md)
-- [02. Cloud9 Environment creation](./readmes/01_prerequisites/02_cloud9_creation.md)
-- [03. Cloud9 IAM modification](./readmes/01_prerequisites/03_cloud9_iam_modification.md)
-- [04. Cloud9 Environment Setup](./readmes/01_prerequisites/04_cloud9_setup.md)
-- [05. Checkout Source Code](./readmes/01_prerequisites/05_download_code.md)
 
-### EKS Preparation
+### Installation Step1
+1. Install EKS
+```
+   bash 01_install.sh
+```
 
-- [01. IRSA Creation](./readmes/02_eks_preparation/01_irsa_creation.md)
-- [02. Deployment Configure Update](./readmes/02_eks_preparation/02_config_update.md)
-- [03, Deploy EKS](./readmes/02_eks_preparation/03_eks_deploy.md)
+2. Install Kubeflow
+```
+   bash 02_steup_kubeflow.sh
+```
 
-### Simple Examples
+3. Install Karpenter
+   This step aims to setup Karpenter to automatically handle resource provisioning, like GPU resources
+```
+   bash 04_karpenter_installation.sh
+```
 
-- [01. Hello World](./readmes/03_simple_examples/01_helloworld.md)
-- [02. KMS Integration](./readmes/03_simple_examples/02_kms_integration.md)
-- [03. Clean Up](./readmes/03_simple_examples/03_clean_up.md)
+4. Create Ingress
+```
+   bash 04_create_ingress.sh
+```
 
-### [Single AWS Account] Medical Image Diagnosis
+5. Setup EFS
+```
+   bash 05_efs_setup.sh
+```
 
-- [01. Base Image Creation](./readmes/04_single_aws_account_medical_image_diagnosis/01_build_base_image.md)
-- [02. Create KMS Key for Model](./readmes/04_single_aws_account_medical_image_diagnosis/02_create_model_kms.md)
-- [03. Build Server App](./readmes/04_single_aws_account_medical_image_diagnosis/03_build_server_app.md)
-- [04. Build Client App](./readmes/04_single_aws_account_medical_image_diagnosis/04_build_client_app.md)
-- [05. Manual Trigger](./readmes/04_single_aws_account_medical_image_diagnosis/05_manual_trigger.md)
+After setup all fundamental resources. Update OIDC-AuthService to integrate with KeyCloak.
+```
+# You will need to configure KeyCloak
 
-### [Multiple AWS Accounts] Medical Image Diagnosis
+cd stacks/kubeflow-manifests/upstream/common/oidc-authservice/base
 
-- [01. ECR Replication Setup](./readmes/05_multiple_aws_account_medical_image_diagnosis/01_ecr_replication.md)
-- [02. Data Owner Setup IRSA](./readmes/05_multiple_aws_account_medical_image_diagnosis/02_data_owner_create_irsa.md)
-- [03. Data Owner Creates Data KMS Key](./readmes/05_multiple_aws_account_medical_image_diagnosis/03_data_owner_create_data_kms_key.md)
-- [04. Tech Provider Creates Model KMS Key](./readmes/05_multiple_aws_account_medical_image_diagnosis/04_tech_provider_create_model_kms_key.md)
-- [05. Tech Provider Builds Server app](./readmes/05_multiple_aws_account_medical_image_diagnosis/05_tech_provider_create_server_app_image.md)
-- [06. Data Owner Updates IAM Policy](./readmes/05_multiple_aws_account_medical_image_diagnosis/06_data_owner_update_iam_policy.md)
-- [07. Data Owner Builds Env](./readmes/05_multiple_aws_account_medical_image_diagnosis/07_data_owner_build_env.md)
-- [08. Data Owner Builds Apps](./readmes/05_multiple_aws_account_medical_image_diagnosis/08_data_owner_build_apps.md)
-- [09. Data Owner Triggers Inference](./readmes/05_multiple_aws_account_medical_image_diagnosis/09_data_owner_inference.md)
-- [10. Add PCR0 for Cryptographic Attestation](./readmes/05_multiple_aws_account_medical_image_diagnosis/10_add_pcr0_for_cryptographic_attestation.md)
+# In "params.env", replace RIGHT Application Load Balancer to proper value
+REDIRECT_URL=https:/<ALB_ID>.us-west-2.elb.amazonaws.com/authservice/oidc/callback
 
-### [Multiple AWS Accounts] Medical Image Diagnosis - With WebUI
 
-- [01. ECR Replication Setup](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/01_ecr_replication.md)
-- [02. Data Owner Setup IRSA](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/02_data_owner_create_irsa.md)
-- [03. Data Owner Creates Data KMS Key](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/03_data_owner_create_data_kms_key.md)
-- [04. Tech Provider Creates Model KMS Key](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/04_tech_provider_create_model_kms_key.md)
-- [05. Tech Provider Builds Server app](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/05_tech_provider_create_server_app_image.md)
-- [06. Data Owner Updates IAM Policy](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/06_data_owner_update_iam_policy.md)
-- [07. Data Owner Builds Env](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/07_data_owner_build_env.md)
-- [08. Data Owner Builds Apps](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/08_data_owner_build_apps.md)
-- [09. Data Owner Triggers Inference](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/09_data_owner_inference.md)
-- [10. Add PCR0 for Cryptographic Attestation](./readmes/06_multiple_aws_account_medical_image_diagnosis_with_ui/10_add_pcr0_for_cryptographic_attestation.md)
+# In "params.env", replace <your keycloak url> & <your_realm_id> to proper value
+OIDC_PROVIDER=https://<your keycloak url>/realms/<your_realm_id>
+OIDC_AUTH_URL=https://<your keycloak url>/realms/<your_realm_id>/protocol/openid-connect/auth
 
-### Summary
+# In "params.env"
+OIDC_SCOPES=<Same scope as indicated in KeyCloak>
 
-- [Summary](./readmes/10_summary/summary.md)
-- [FAQ](./readmes/10_summary/faq.md)
-- [Cleanup](./readmes/10_summary/cleanup.md)
-- 
 
-# Run - sudo dnf install -y mariadb105-devel gcc python3-devel
+# In "secret_params.env", update CLIENT_ID & CLIENT_SECRET
+CLIENT_ID=<REALM_ID>
+CLIENT_SECRET=<REALM_SECRET>
+
+```
+Run below command to reactivate
+```
+    cd stacks/kubeflow-manifests
+    kustomize build awsconfigs/common/upstream/common/oidc-authservice/base | kubectl delete -f - 
+    kustomize build awsconfigs/common/upstream/common/oidc-authservice/base | kubectl apply -f - 
+````
+
+
+### User Onboarding
+This section focuses on individual user setup, including
+- Profile & IRSA
+- Namespace level persistent volume
+- Ray services
+
+```
+   cd user-onboarding
+   
+   bash user-setup.sh <username in email> <namespace>
+   
+   # Example:
+   # bash user-setup.sh user@example.com kubeflow-user-example-com
+   # bash user-setup.sh kubeflow-ray-user@example.com kubeflow-ray-user
+```
+
+
+### Simulation
+In `examples` folder, there are some sample data of stocks, including date/open/close/high/low/volume.
+
+1. Upload to S3 bucket
+```
+   # assuming that there is a bucket called quantbacktest-ray-testing-mock
+   cd examples/
+   aws s3 cp data/ s3://quantbacktest-ray-testing-mock/daily/ --recursive
+   
+```
+
+2. Update the BUCKET_NAME in notebook to `quantbacktest-ray-testing-mock`
+```
+   # directly run the notebook
+   # result will be uploaded to s3://quantbacktest-ray-testing-mock/result/, in a format: "Result<stock_id>.csv"
+```
+
+3. Can validate by getting result file
+```
+   aws s3 cp s3://quantbacktest-ray-testing-mock/result/Result000001.csv .
+```
