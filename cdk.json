@@ -19,7 +19,7 @@
     "eks_deploy_managed_nodegroup": "True",
     "eks_default_node_role_create_if_not_exists": "True",
     "eks_default_node_role_name": "ray-eks-default-noderole",
-    "eks_default_node_role_managed_policies": ["AmazonEC2ContainerRegistryReadOnly", "AmazonEKS_CNI_Policy", "AmazonEKSWorkerNodePolicy", "AmazonSSMManagedInstanceCore"],
+    "eks_default_node_role_managed_policies": ["AmazonEC2ContainerRegistryReadOnly", "AmazonEKS_CNI_Policy", "AmazonEKSWorkerNodePolicy", "AmazonSSMManagedInstanceCore", "AmazonS3FullAccess"],
     "eks_node_quantity": 2,
     "eks_node_max_quantity": 5,
     "eks_node_min_quantity": 1,
