@@ -129,6 +129,50 @@ spec:
         kubernetes.io/cluster/${CLUSTER_NAME}: owned  # need to change according to VPC setup
   amiSelectorTerms:
     - id: "${GPU_AMI_ID}" # <- GPU Optimized AMD AMI 
+
+---
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: cpu
+spec:
+  template:
+    metadata:
+      labels:
+        type: karpenter
+    spec:
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: "node.kubernetes.io/instance-type"
+          operator: In
+          values: ["c5.xlarge", "m5.xlarge", "r5.xlarge"]
+      nodeClassRef:
+        apiVersion: karpenter.k8s.aws/v1beta1
+        kind: EC2NodeClass
+        name: cpu-nodeclass
+  limits:
+    cpu: "1000"
+    memory: 1000Gi
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+    expireAfter: 720h # 30 * 24h = 720h
+---
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: cpu-nodeclass
+spec:
+  amiFamily: AL2 # Amazon Linux 2
+  role: "KarpenterNodeRole-${CLUSTER_NAME}"
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER_NAME}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${CLUSTER_NAME}
+  
 EOF
 if [[ $? -ne 0 ]];then
     echo "Error occuried when creating NodePool and EC2Node Class."

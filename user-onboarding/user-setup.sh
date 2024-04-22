@@ -19,7 +19,7 @@ export CLUSTER_REGION=$(cat ../cdk.json | grep "REGION" |perl -p -E "s/(.*): \"/
 export ACCOUNT_ID=$(grep "ACCOUNT_ID" ../cdk.json | perl -p -E "s/(.*): \"//g;s/\",?//g")
 export ENABLE_USER_IRSA=$(grep "enable_user_irsa" ../cdk.json | perl -p -E "s/(.*): \"//g;s/\",?//g")
 export USER_IRSA_ROLE_NAME=$(grep "user_irsa_iam_role" ../cdk.json | perl -p -E "s/(.*): \"//g;s/\",?//g")
-# KUBEFLOW_USER_IRSA_ROLE="kubeflow-user-irsa-role"
+
 
 if [[ $# -le 1 ]];then
   #echo "Required two parameters : User Name (Email) and EFS System ID(fs-xxx). Namespace will be prefix before @ symbal."
@@ -116,7 +116,7 @@ spec:
   plugins:
   - kind: AwsIamForServiceAccount
     spec:
-      awsIamRole: $(aws iam get-role --role-name kubeflow-user-irsa-role --output text --query 'Role.Arn')
+      awsIamRole: $(aws iam get-role --role-name ${USER_IRSA_ROLE_NAME} --output text --query 'Role.Arn')
       annotateOnly: true
 EOF
 
@@ -150,7 +150,7 @@ fi
 #   3. Setup PVC for individual namespace
 #
 ######################################################################
-## Assume EFS & SC already created, and set SC to default
+# Assume EFS & SC already created, and set SC to default
 echo "3 - Install PVC/PV to individual namespace [${PROFILE_NAMESPACE}]"
 yq e '.metadata.namespace = env(PROFILE_NAMESPACE)' -i ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
 yq e '.metadata.name = env(PROFILE_NAMESPACE)' -i ../stacks/kubeflow-manifests/deployments/add-ons/storage/efs/dynamic-provisioning/pvc.yaml
@@ -164,6 +164,6 @@ fi
 
 
 echo "4 - Intall RayOperator and KubeRay to individual Namespace [${PROFILE_NAMESPACE}]"
-helm install kuberay-operator ../stacks/kuberay/helm-chart/kuberay-operator/ -n ${PROFILE_NAMESPACE}
-helm install ray-cluster ../stacks/kuberay/helm-chart/ray-cluster/ -n ${PROFILE_NAMESPACE}
+helm upgrade --install kuberay-operator ../stacks/kuberay/helm-chart/kuberay-operator/ -n ${PROFILE_NAMESPACE}
+helm upgrade --install ray-cluster ../stacks/kuberay/helm-chart/ray-cluster/ -n ${PROFILE_NAMESPACE}
 echo "RayOperator and cluster installed to namespace [${PROFILE_NAMESPACE}]"

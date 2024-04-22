@@ -5,7 +5,7 @@
     "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": false,
     "@aws-cdk/aws-rds:lowercaseDbIdentifier": false,
     "@aws-cdk/core:stackRelativeExports": false,
-    "ACCOUNT_ID": "614393260192",
+    "ACCOUNT_ID": "<account_id>",
     "REGION": "us-west-2",
     "create_new_cluster_admin_role": "True",
     "existing_admin_role_name": "",
@@ -35,7 +35,7 @@
     "deploy_cluster_autoscaler": "True",
     "karpenter_version": "0.35.1",
     "efs_default_claim_name": "kubeflow-efs",
-    "enable_user_irsa": "False",
-    "user_irsa_iam_role": "<if True, then insert>"
+    "enable_user_irsa": "True",
+    "user_irsa_iam_role": "ray-on-eks-irsa-role"
   }
 }
