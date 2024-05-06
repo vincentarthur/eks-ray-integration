@@ -32,6 +32,13 @@ Configure `cdk.json` with changing below items:
 ```
 
 2. Install Kubeflow
+   Before provisioning kubeflow, you will need to update the Certificate ARN (Amazon Certificate Manager, ACM) under `stacks/kubeflow-manifests/awsconfigs/common/istio-ingress/overlayes/https/params.env`
+   This ACM can be imported from your customized cert (i.e. Letsencrypt) or Amazon issued cert.
+  ```
+   # ARN of an ACM certificate to configure in ALB's HTTPS listener rule
+   certArn=
+  ```
+
 ```
    bash 02_steup_kubeflow.sh
 ```
